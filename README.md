@@ -11,7 +11,7 @@ Sentinel-1 and LIDAR data using machine learning
 - [x] accuracy assessment and comparison of two different machine learning approaches
 - [x] comparison of woody cover information from different time steps supporting the development of
 a savanna ecosystem woody cover monitoring system
-- [ ] Interpretation of classification results
+- [x] Interpretation of classification results
 
 Our basic concept on subset processes through imageries is insipired by https://geohackweek.github.io/raster/04-workingwithrasters/, however we would like to implement Gdal to generate our analysis (One of our main code: https://ceholden.github.io/open-geo-tutorial/python/chapter_5_classification.html). <br>
 References used in this system are tagged in the code to give credits to the owner of the code.
@@ -423,24 +423,32 @@ Calculating Prediction different
     kwargs['method'] = 'SVC'
     kwargs['filename'],kwargs['headingname'], kwargs['accuracy'] = 'Set_test_2017', heading_names, round(Accuracy17["Accuracy_SVC"],2)
     sets = Kernel_SVC_prediction1.reshape(ref_test.shape) # since prediction's shape is 1D, we need to reshape our array to 2D
+    set0 = sets < 0
+    sets[set0] = 0
     istore(sets,**kwargs) # Saving SVC prediction
     sets = 0 # clear memory
 
     kwargs['method'] = 'RF'
     kwargs['accuracy'] = round(Accuracy17["Accuracy_RF"],2)
     sets = RandomForest_prediction1.reshape(ref_test.shape) # since prediction's shape is 1D, we need to reshape our array to 2D
+    set0 = sets < 0
+    sets[set0] = 0
     istore(sets,**kwargs) # Saving RandomForest prediction
     sets = 0 # clear memory
 
     kwargs['method'] = 'SVC'
     kwargs['filename'],kwargs['headingname'], kwargs['accuracy'] = 'Set_test_2018', heading_names2, round(Accuracy18["Accuracy_SVC"],2)
     sets = Kernel_SVC_prediction2.reshape(ref_test.shape) # since prediction's shape is 1D, we need to reshape our array to 2D
+    set0 = sets < 0
+    sets[set0] = 0
     istore(sets,**kwargs) # Saving SVC prediction
     sets = 0 # clear memory
 
     kwargs['method'] = 'RF'
     kwargs['accuracy'] = round(Accuracy18["Accuracy_RF"],2)
     sets = RandomForest_prediction2.reshape(ref_test.shape) # since prediction's shape is 1D, we need to reshape our array to 2D
+    set0 = sets < 0
+    sets[set0] = 0
     istore(sets,**kwargs) # Saving RandomForest prediction
     sets = 0 # clear memory
 
@@ -461,8 +469,8 @@ Calculating Prediction different
 
 Different Map
 
-    Kernel_SVC_diff = Kernel_SVC_prediction1 - Kernel_SVC_prediction2
-    RandomForest_diff = RandomForest_prediction1 - RandomForest_prediction2
+    Kernel_SVC_diff = Prediction1_SVC - Prediction2_SVC 
+    RandomForest_diff = Prediction1_RF  - Prediction2_RF
 
 **10.5. Saving whole image prediction**
 
