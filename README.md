@@ -182,32 +182,22 @@ _Using module <font color="blue">istore()</font>, the dataset's Figure can be ge
 
     OM = os.path.join(default_output,'Overview_Map/') #set output dir for overview map
     SUB = os.path.join(default_output,'Subset/') #set output dir for subset map
-    TEST = os.path.join(default_output,'Test/') #set output dir for test map
-    TRAIN = os.path.join(default_output,'Train/') #set output dir for train map
     PRD = os.path.join(default_output,'Prediction/') #set output dir for prediction map
 
     try: # Check the availability of each folder
         os.mkdir(OM)
         os.mkdir(SUB)
-        os.mkdir(TEST)
-        os.mkdir(TRAIN)
         os.mkdir(PRD)
     except OSError:
         os.rmdir(OM)
         os.rmdir(SUB)
-        os.rmdir(TEST)
-        os.rmdir(TRAIN)
         os.rmdir(PRD)
         os.mkdir(OM)
         os.mkdir(SUB)
-        os.mkdir(TEST)
-        os.mkdir(TRAIN)
         os.mkdir(PRD)
     else:
         os.makedirs(OM,exist_ok=True)
         os.makedirs(SUB,exist_ok=True)
-        os.makedirs(TEST,exist_ok=True)
-        os.makedirs(TRAIN,exist_ok=True)
         os.makedirs(PRD,exist_ok=True)
 
 ### Saving Overview Map, creating Dataset-subset and saving Subset Map
@@ -256,7 +246,6 @@ _Classify woody cover into 10 classes by range 10% (0-10%, 10-20%, and so on)_
     kwargs['datainput'],kwargs['filename'],kwargs['headingname'] = 'woody', 'Classified_Woody', 'Classified Woody'
     istore(class_ref,**kwargs) # Saving classified woody reference
 
-    class_ref[np.isnan(class_ref)] = -99 # Since following process will get issues with NAN values
     img_ref = class_ref.copy()
 
 **6.2. Create dataset subset, save subset map**
@@ -290,46 +279,16 @@ _Using module <font color="blue">subsets()</font>, the reference (LiDAR data) wi
                                                                     random_state=rd_state, shuffle=False)
 
     mask = ~np.isnan(set1_train) & ~np.isnan(set2_train) & ~np.isnan(ref_train) # creating ~NAN Mask
+    mask2 = ~np.isnan(set1_test) & ~np.isnan(set2_test) & ~np.isnan(ref_test) # creating ~NAN Mask
 
     set1_train_mask = set1_train[mask].reshape(-1, 1)
     set2_train_mask = set2_train[mask].reshape(-1, 1) # Masking split_train datasets
-    set1_test = set1_test.flatten().reshape(-1, 1)
-    set2_test = set2_test.flatten().reshape(-1, 1) # Flatten Array for Prediction Machine Learning
     ref_train_mask = ref_train[mask] # Masking split_train reference
 
-**7.1. Saving Test Map**
+    set1_test = set1_test[mask2].reshape(-1,1)
+    set2_test = set2_test[mask2].reshape(-1,1) # Masking for Prediction Machine Learning
+    ref_test_mask = ref_test[mask2] # Masking split_train reference
 
-    kwargs['datamap'], kwargs['output'] = 'test', TEST  # set category and outputmap
-
-    kwargs['datainput'],kwargs['filename'],kwargs['headingname'] = 'woody', file_name, heading_name
-    istore(ref_test,**kwargs) # Save Reference Test
-
-    kwargs['datainput'],kwargs['filename'],kwargs['headingname'] = 'sentinel', file_names, heading_names
-    sets = set1_test.reshape(ref_test.shape) #since masked set change the shape, we reshape our array
-    istore(sets,**kwargs) # Save Dataset Test
-    sets = 0 # clear memory
-
-    kwargs['datainput'],kwargs['filename'],kwargs['headingname'] = 'sentinel', file_names2, heading_names2
-    sets = set2_test.reshape(ref_test.shape) #since masked set change the shape, we reshape our array
-    istore(sets,**kwargs) # Save Dataset Test
-    sets = 0 # clear memory
-
-**7.2. Saving Train Map**
-
-    kwargs['datamap'], kwargs['output'] = 'train', TRAIN # set category and outputmap
-
-    kwargs['datainput'],kwargs['filename'],kwargs['headingname'] = 'woody', file_name, heading_name
-    istore(ref_train,**kwargs) # Save Reference Test
-
-    kwargs['datainput'],kwargs['filename'],kwargs['headingname'] = 'sentinel', file_names, heading_names
-    sets = set1_train_mask.reshape(set1_train.shape) #since masked set change the shape, we reshape our array
-    istore(sets,**kwargs) # Save Dataset Test
-    sets = 0 # clear memory
-
-    kwargs['datainput'],kwargs['filename'],kwargs['headingname'] = 'sentinel', file_names2, heading_names2
-    sets = set2_train_mask.reshape(set2_train.shape) #since masked set change the shape, we reshape our array
-    istore(sets,**kwargs) # Save Dataset Test
-    sets = 0 # clear memory
 
 ### Instantiation of the Model
 
@@ -362,19 +321,18 @@ _Using module <font color="blue">subsets()</font>, the reference (LiDAR data) wi
 
 _Support Vector Machine_
 
-    Accuracy17 = {"Accuracy_SVC": metrics.accuracy_score(ref_test.flatten(),Kernel_SVC_prediction1),
-                  "Matrix_SVC": metrics.confusion_matrix(ref_test.flatten(), Kernel_SVC_prediction1),
-                  "Report_SVC": metrics.classification_report(ref_test.flatten(), Kernel_SVC_prediction1)}
+    Accuracy17 = {"Accuracy_SVC": metrics.accuracy_score(ref_test_mask,Kernel_SVC_prediction1),
+                  "Matrix_SVC": metrics.confusion_matrix(ref_test_mask, Kernel_SVC_prediction1),
+                  "Report_SVC": metrics.classification_report(ref_test_mask, Kernel_SVC_prediction1)}
 
-    Accuracy18 = {"Accuracy_SVC": metrics.accuracy_score(ref_test.flatten(),Kernel_SVC_prediction2),
-                  "Matrix_SVC": metrics.confusion_matrix(ref_test.flatten(), Kernel_SVC_prediction2),
-                  "Report_SVC": metrics.classification_report(ref_test.flatten(), Kernel_SVC_prediction2)}
+    Accuracy18 = {"Accuracy_SVC": metrics.accuracy_score(ref_test_mask,Kernel_SVC_prediction2),
+              "Matrix_SVC": metrics.confusion_matrix(ref_test_mask, Kernel_SVC_prediction2),
+              "Report_SVC": metrics.classification_report(ref_test_mask, Kernel_SVC_prediction2)}
 
 _Random Forest_
 
-    Accuracy17["Accuracy_RF"], Accuracy17["Matrix_RF"], Accuracy17["Report_RF"]  =  metrics.accuracy_score(ref_test.flatten(), RandomForest_prediction1),metrics.confusion_matrix(ref_test.flatten(), RandomForest_prediction1), metrics.classification_report(ref_test.flatten(), RandomForest_prediction1)
-    
-    Accuracy18["Accuracy_RF"], Accuracy18["Matrix_RF"], Accuracy18["Report_RF"]  =  metrics.accuracy_score(ref_test.flatten(), RandomForest_prediction2),metrics.confusion_matrix(ref_test.flatten(), RandomForest_prediction2), metrics.classification_report(ref_test.flatten(), RandomForest_prediction2) 
+    Accuracy17["Accuracy_RF"], Accuracy17["Matrix_RF"], Accuracy17["Report_RF"]  =  metrics.accuracy_score(ref_test_mask, RandomForest_prediction1),metrics.confusion_matrix(ref_test_mask, RandomForest_prediction1), metrics.classification_report(ref_test_mask, RandomForest_prediction1)
+    Accuracy18["Accuracy_RF"], Accuracy18["Matrix_RF"], Accuracy18["Report_RF"]  =  metrics.accuracy_score(ref_test_mask, RandomForest_prediction2),metrics.confusion_matrix(ref_test_mask, RandomForest_prediction2), metrics.classification_report(ref_test_mask, RandomForest_prediction2) 
 
 Printing accuracy, confusion matrix, and classification report
 
@@ -409,58 +367,8 @@ Calculating Accuracy Different for both datasets
     print("Different")
     print("SVM: ", str(a))
     print("RF: ", str(b))
-    
-Calculating Prediction different
 
-    Kernel_SVC_diff = Kernel_SVC_prediction1 - Kernel_SVC_prediction2
-    RandomForest_diff = RandomForest_prediction1 - RandomForest_prediction2
-    
-**10.3. Saving Prediction Map**
-
-    kwargs['datamap'], kwargs['output'] = 'prd', PRD # set category and outputmap
-    kwargs['datainput'] = '' # clear memory, since we don't need datainput for following lines
-
-    kwargs['method'] = 'SVC'
-    kwargs['filename'],kwargs['headingname'], kwargs['accuracy'] = 'Set_test_2017', heading_names, round(Accuracy17["Accuracy_SVC"],2)
-    sets = Kernel_SVC_prediction1.reshape(ref_test.shape) # since prediction's shape is 1D, we need to reshape our array to 2D
-    set0 = sets < 0
-    sets[set0] = 0
-    istore(sets,**kwargs) # Saving SVC prediction
-    sets = 0 # clear memory
-
-    kwargs['method'] = 'RF'
-    kwargs['accuracy'] = round(Accuracy17["Accuracy_RF"],2)
-    sets = RandomForest_prediction1.reshape(ref_test.shape) # since prediction's shape is 1D, we need to reshape our array to 2D
-    set0 = sets < 0
-    sets[set0] = 0
-    istore(sets,**kwargs) # Saving RandomForest prediction
-    sets = 0 # clear memory
-
-    kwargs['method'] = 'SVC'
-    kwargs['filename'],kwargs['headingname'], kwargs['accuracy'] = 'Set_test_2018', heading_names2, round(Accuracy18["Accuracy_SVC"],2)
-    sets = Kernel_SVC_prediction2.reshape(ref_test.shape) # since prediction's shape is 1D, we need to reshape our array to 2D
-    set0 = sets < 0
-    sets[set0] = 0
-    istore(sets,**kwargs) # Saving SVC prediction
-    sets = 0 # clear memory
-
-    kwargs['method'] = 'RF'
-    kwargs['accuracy'] = round(Accuracy18["Accuracy_RF"],2)
-    sets = RandomForest_prediction2.reshape(ref_test.shape) # since prediction's shape is 1D, we need to reshape our array to 2D
-    set0 = sets < 0
-    sets[set0] = 0
-    istore(sets,**kwargs) # Saving RandomForest prediction
-    sets = 0 # clear memory
-
-    kwargs['filename'],kwargs['headingname'], kwargs['accuracy'] = 'test_Dif_SVC', 'Different Map 17/18 to 18/19', (a/100)
-    istore(Kernel_SVC_diff.reshape(ref_test.shape),**kwargs) # Saving Different SVC Prediction
-
-    kwargs['filename'],kwargs['headingname'], kwargs['accuracy'] = 'test_Dif_RF', 'Different Map 17/18 to 18/19', (b/100)
-    istore(RandomForest_diff.reshape(ref_test.shape),**kwargs) # Saving Different RF Prediction
-
-    del Kernel_SVC_diff, RandomForest_diff # clear memory
-
-**10.4. Predicting rest of image**
+**10.3. Predicting dataset imageries**
 
     Prediction1_SVC = Kernel_SVC_model1.predict(img_slc1.flatten().reshape(-1,1))
     Prediction2_SVC = Kernel_SVC_model2.predict(img_slc2.flatten().reshape(-1,1))
@@ -472,7 +380,7 @@ Different Map
     Kernel_SVC_diff = Prediction1_SVC - Prediction2_SVC 
     RandomForest_diff = Prediction1_RF  - Prediction2_RF
 
-**10.5. Saving whole image prediction**
+**10.4. Saving image prediction**
 
     kwargs['method'] = 'SVC'
     kwargs['filename'], kwargs['accuracy'] = file_names, round(Accuracy17["Accuracy_SVC"],2)
