@@ -446,5 +446,3 @@ Saving Different Map
     istore(dRF_map.reshape(img_slc1.shape),**kwargs) # Saving Different RF Prediction
 
     del d1_map, d2_map, dSVC_map, dRF_map # clear memory
-    
-### Class Interpretation
