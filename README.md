@@ -2,14 +2,14 @@
 
 **Student Assignment of GEO 419 - Modular Programming with Python for Application in Remote Sensing**
 
-29.02.2020: Submission of Student Assignment
+29.02.2020: Submission of Student Assignment <br>
 Person in charge: Resha C.Y. Wibowo (resha.wibowo@uni-jena.de), <br> Lecturers for GEO 419 in charge: Martin Habermeyer, John Truckenbrodt, Prof. Dr. Christiane Schmullius
 
 Task lists:
-- [x] derive woody cover information in the savanna ecosystem of the Kruger National Park from
+- [x] Derive woody cover information in the savanna ecosystem of the Kruger National Park from
 Sentinel-1 and LIDAR data using machine learning
-- [x] accuracy assessment and comparison of two different machine learning approaches
-- [x] comparison of woody cover information from different time steps supporting the development of
+- [x] Accuracy assessment and comparison of two different machine learning approaches
+- [x] Comparison of woody cover information from different time steps supporting the development of
 a savanna ecosystem woody cover monitoring system
 - [x] Interpretation of classification results
 
@@ -93,15 +93,15 @@ Our datasets used in this system are:
 
         dataset = ("02_KNP_LIDAR_DSM_50m_woody_cover_perc", "S1_A_D_VH_VV_stack_04_2017_04_2018_KNP", "S1_A_D_VH_VV_stack_04_2018_04_2019_KNP")
         wdataset = os.path.join(default_dataset, dataset[0])
-        s2017 = os.path.join(default_dataset, dataset[1])
-        s2018 = os.path.join(default_dataset, dataset[2])
+        dataset1 = os.path.join(default_dataset, dataset[1])
+        dataset2 = os.path.join(default_dataset, dataset[2])
 
 _Using module <font color="blue">callset()</font>, one reference (LiDAR data) and one dataset (Sentinel-1 Backscatter) can be called_
 
-    ref1, meta_ref, dim_ref, pr_ref, band_ref, set1, meta_set, dim_set, pr_set, band_set = callset(wdataset,s2017) # Call the dataset using <font color="blue">callset</font> module
+    ref1, meta_ref, dim_ref, pr_ref, band_ref, set1, meta_set, dim_set, pr_set, band_set = callset(wdataset,dataset1) # Call the dataset using <font color="blue">callset</font> module
 
     # Saving set1, since we have two Sentinel-1 datasets
-    s1_17 = {'set': set1,
+    ds1 = {'set': set1,
            'meta': meta_set,
            'dim': dim_set,
            'prj': pr_set,
@@ -110,18 +110,18 @@ _Using module <font color="blue">callset()</font>, one reference (LiDAR data) an
     del ref1, meta_ref, dim_ref, pr_ref, band_ref, set1, meta_set, dim_set, pr_set, band_set # Clear Memory
 
     # Second dataset
-    ref1, meta_ref, dim_ref, pr_ref, band_ref, set1, meta_set, dim_set, pr_set, band_set = callset(wdataset,s2018) # Call the dataset using <font color="blue">callset</font> module
+    ref1, meta_ref, dim_ref, pr_ref, band_ref, set1, meta_set, dim_set, pr_set, band_set = callset(wdataset,dataset2) # Call the dataset using <font color="blue">callset</font> module
 
     # Saving set2
-    s1_18 = {'set': set1,
+    ds2 = {'set': set1,
            'meta': meta_set,
            'dim': dim_set,
            'prj': pr_set,
            'band': band_set}
 
     df_ref = ref1.ReadAsArray() # Register Reference dataframe
-    df_set17 = s1_17["set"].ReadAsArray() # Register 1. Sentinel dataframe
-    df_set18 = s1_18["set"].ReadAsArray() # Register 2. Sentinel dataframe
+    df_set1 = ds1["set"].ReadAsArray() # Register 1. Sentinel dataframe
+    df_set2 = ds2["set"].ReadAsArray() # Register 2. Sentinel dataframe
 
 
 _Printing Spatial Properties of Dataframes_
@@ -134,11 +134,11 @@ _Printing Spatial Properties of Dataframes_
     print("Layer(s): ", band_ref)
     print("----------")
     print("SAR Data:", str(dataset[1]), "and", str(dataset[2]))
-    print("Projection: ", str(s1_17["prj"][8:28]), "and", str(s1_18["prj"][8:28]))
+    print("Projection: ", str(ds1["prj"][8:28]), "and", str(ds2["prj"][8:28]))
     print("Properties:")
-    print("Dimension: ", s1_17["dim"][0], "x", s1_17["dim"][1], "and", s1_18["dim"][0], "x", s1_18["dim"][1])
-    print("Layer(s): ", s1_17["band"], "and", s1_18["band"])
-    print("Size: ", np.size(df_set17), "and", np.size(df_set18))
+    print("Dimension: ", ds1["dim"][0], "x", ds1["dim"][1], "and", ds2["dim"][0], "x", ds2["dim"][1])
+    print("Layer(s): ", ds1["band"], "and", ds2["band"])
+    print("Size: ", np.size(df_set1), "and", np.size(df_set2))
 
 
 _Using module <font color="blue">cref()</font>, classes in reference (LiDAR data) can be identified_
@@ -156,7 +156,7 @@ _Using module <font color="blue">cref()</font>, classes in reference (LiDAR data
     selection = 24 # selected time-series layer
     rd_state = 204 # set random_state for machine learning, and split-train-test module
     tsize = 0.7 # set test size for machine learning split-train-test
-    estimator = 50 # number of estimator for RandomForest
+    estimator = 100 # number of estimator for RandomForest in range 10 to 500
 
     file_name = "Woody" # reference filename
     heading_name = "LiDAR Woody Cover" # heading on figure
@@ -167,8 +167,8 @@ _Using module <font color="blue">cref()</font>, classes in reference (LiDAR data
     file_names2 = "S1_TS_18_19" # dataset filename
     heading_names2 = "Sentinel-1 Timeseries 2018/2019" # heading on figure
 
-    img_slc1 = s1_17["set"].GetRasterBand(selection).ReadAsArray() # store for prediction map
-    img_slc2 = s1_18["set"].GetRasterBand(selection).ReadAsArray() # store for prediction map
+    img_slc1 = ds1["set"].GetRasterBand(selection).ReadAsArray() # store for prediction map
+    img_slc2 = ds2["set"].GetRasterBand(selection).ReadAsArray() # store for prediction map
 
     kwargs = {'datamap': '',
               'datainput': '',
@@ -183,25 +183,30 @@ _Using module <font color="blue">istore()</font>, the dataset's Figure can be ge
           
 **5. Set output folders, for figure storage**
 
-    OM = os.path.join(default_output,'Overview_Map/') #set output dir for overview map
-    SUB = os.path.join(default_output,'Subset/') #set output dir for subset map
-    PRD = os.path.join(default_output,'Prediction/') #set output dir for prediction map
+    OM = os.path.join(default_output,'Overview_Map/') # set output dir for overview map
+    SUB = os.path.join(default_output,'Subset/') # set output dir for subset map
+    PRD = os.path.join(default_output,'Prediction/') # set output dir for prediction map
+    DIF = os.path.join(default_output,'Dif_Map/') #set output dir for comparison map
 
     try: # Check the availability of each folder
         os.mkdir(OM)
         os.mkdir(SUB)
         os.mkdir(PRD)
+        os.mkdir(DIF)
     except OSError:
         os.rmdir(OM)
         os.rmdir(SUB)
         os.rmdir(PRD)
+        os.rmdir(DIF)
         os.mkdir(OM)
         os.mkdir(SUB)
         os.mkdir(PRD)
+        os.mkdir(DIF)
     else:
         os.makedirs(OM,exist_ok=True)
         os.makedirs(SUB,exist_ok=True)
         os.makedirs(PRD,exist_ok=True)
+        os.makedirs(DIF,exist_ok=True)
 
 ### Saving Overview Map, creating Dataset-subset and saving Subset Map
 
@@ -213,10 +218,10 @@ _Using module <font color="blue">istore()</font>, the dataset's Figure can be ge
     istore(df_ref,**kwargs) # Save Reference Map
 
     kwargs['datainput'],kwargs['filename'],kwargs['headingname'] = 'sentinel', file_names, heading_names
-    istore(df_set17,**kwargs) # Save Dataset Map
+    istore(df_set1,**kwargs) # Save Dataset Map
 
     kwargs['datainput'],kwargs['filename'],kwargs['headingname'] = 'sentinel', file_names2, heading_names2
-    istore(df_set18,**kwargs) # Save Dataset Map
+    istore(df_set2,**kwargs) # Save Dataset Map
     
 _Classify woody cover into 10 classes by range 10% (0-10%, 10-20%, and so on)_
 
@@ -255,21 +260,21 @@ _Classify woody cover into 10 classes by range 10% (0-10%, 10-20%, and so on)_
 
 _Using module <font color="blue">subsets()</font>, the reference (LiDAR data) will be used as extend and the dataset (Sentinel-1 Backscatter) will be clipped by extend_
 
-    xoff, yoff, xcount, ycount = subsets(ref1, s1_17["set"]) # Clipped the dataset using <font color="blue">subsets</font> module
-    img_set17 = s1_17["set"].GetRasterBand(selection).ReadAsArray(xoff, yoff, xcount, ycount) # Clipped data
+    xoff, yoff, xcount, ycount = subsets(ref1, ds1["set"]) # Clipped the dataset using <font color="blue">subsets</font> module
+    img_set1 = ds1["set"].GetRasterBand(selection).ReadAsArray(xoff, yoff, xcount, ycount) # Clipped data
 
     del xoff, yoff, xcount, ycount # clear memory
 
-    xoff, yoff, xcount, ycount = subsets(ref1, s1_18["set"]) # Clipped the dataset using <font color="blue">subsets</font> module
-    img_set18 = s1_18["set"].GetRasterBand(selection).ReadAsArray(xoff, yoff, xcount, ycount) # Clipped data
+    xoff, yoff, xcount, ycount = subsets(ref1, ds2["set"]) # Clipped the dataset using <font color="blue">subsets</font> module
+    img_set2 = ds2["set"].GetRasterBand(selection).ReadAsArray(xoff, yoff, xcount, ycount) # Clipped data
 
     kwargs['datamap'], kwargs['output'] = 'sub', SUB # set category and outputmap
 
     kwargs['datainput'],kwargs['filename'],kwargs['headingname'] = 'sentinel', file_names, heading_names
-    istore(img_set17,**kwargs) # Saving clipped Dataset
+    istore(img_set1,**kwargs) # Saving clipped Dataset
 
     kwargs['datainput'],kwargs['filename'],kwargs['headingname'] = 'sentinel', file_names2, heading_names2
-    istore(img_set18,**kwargs) # Saving clipped Dataset
+    istore(img_set2,**kwargs) # Saving clipped Dataset
 
 ### Test and Sampling
 
@@ -277,7 +282,7 @@ _Using module <font color="blue">subsets()</font>, the reference (LiDAR data) wi
 
     ref_train, ref_test = train_test_split(img_ref, test_size=tsize,random_state=rd_state, shuffle=False)
 
-    set1_train, set1_test, set2_train, set2_test = train_test_split(img_set17, img_set18,
+    set1_train, set1_test, set2_train, set2_test = train_test_split(img_set1, img_set2,
                                                                     test_size=tsize,
                                                                     random_state=rd_state, shuffle=False)
 
@@ -324,52 +329,44 @@ _Using module <font color="blue">subsets()</font>, the reference (LiDAR data) wi
 
 _Support Vector Machine_
 
-    Accuracy17 = {"Accuracy_SVC": metrics.accuracy_score(ref_test_mask,Kernel_SVC_prediction1),
+    Accuracy1 = {"Accuracy_SVC": metrics.accuracy_score(ref_test_mask,Kernel_SVC_prediction1),
                   "Matrix_SVC": metrics.confusion_matrix(ref_test_mask, Kernel_SVC_prediction1),
                   "Report_SVC": metrics.classification_report(ref_test_mask, Kernel_SVC_prediction1)}
 
-    Accuracy18 = {"Accuracy_SVC": metrics.accuracy_score(ref_test_mask,Kernel_SVC_prediction2),
+    Accuracy2 = {"Accuracy_SVC": metrics.accuracy_score(ref_test_mask,Kernel_SVC_prediction2),
               "Matrix_SVC": metrics.confusion_matrix(ref_test_mask, Kernel_SVC_prediction2),
               "Report_SVC": metrics.classification_report(ref_test_mask, Kernel_SVC_prediction2)}
 
 _Random Forest_
 
-    Accuracy17["Accuracy_RF"], Accuracy17["Matrix_RF"], Accuracy17["Report_RF"]  =  metrics.accuracy_score(ref_test_mask, RandomForest_prediction1),metrics.confusion_matrix(ref_test_mask, RandomForest_prediction1), metrics.classification_report(ref_test_mask, RandomForest_prediction1)
-    Accuracy18["Accuracy_RF"], Accuracy18["Matrix_RF"], Accuracy18["Report_RF"]  =  metrics.accuracy_score(ref_test_mask, RandomForest_prediction2),metrics.confusion_matrix(ref_test_mask, RandomForest_prediction2), metrics.classification_report(ref_test_mask, RandomForest_prediction2) 
+    Accuracy1["Accuracy_RF"], Accuracy1["Matrix_RF"], Accuracy1["Report_RF"]  =  metrics.accuracy_score(ref_test_mask, RandomForest_prediction1),metrics.confusion_matrix(ref_test_mask, RandomForest_prediction1), metrics.classification_report(ref_test_mask, RandomForest_prediction1)
+    Accuracy2["Accuracy_RF"], Accuracy2["Matrix_RF"], Accuracy2["Report_RF"]  =  metrics.accuracy_score(ref_test_mask, RandomForest_prediction2),metrics.confusion_matrix(ref_test_mask, RandomForest_prediction2), metrics.classification_report(ref_test_mask, RandomForest_prediction2) 
 
 Printing accuracy, confusion matrix, and classification report
 
     print("Model data", file_names)
     print("Support Vector Machine")
-    print("Accuracy:", Accuracy17["Accuracy_SVC"])
-    print(Accuracy17["Matrix_SVC"])
-    print(Accuracy17["Report_SVC"])
+    print("Accuracy:", Accuracy1["Accuracy_SVC"])
+    print(Accuracy1["Matrix_SVC"])
+    print(Accuracy1["Report_SVC"])
     print("")
     print("Random Forest")
-    print("Accuracy:", Accuracy17["Accuracy_RF"])
-    print(Accuracy17["Matrix_RF"])
-    print(Accuracy17["Report_RF"])
+    print("Accuracy:", Accuracy1["Accuracy_RF"])
+    print(Accuracy1["Matrix_RF"])
+    print(Accuracy1["Report_RF"])
     print("""
 
     """)
     print("Model data", file_names2)
     print("Support Vector Machine")
-    print("Accuracy:", Accuracy18["Accuracy_SVC"])
-    print(Accuracy18["Matrix_SVC"])
-    print(Accuracy18["Report_SVC"])
+    print("Accuracy:", Accuracy2["Accuracy_SVC"])
+    print(Accuracy2["Matrix_SVC"])
+    print(Accuracy2["Report_SVC"])
     print("")
     print("Random Forest")
-    print("Accuracy:", Accuracy18["Accuracy_RF"])
-    print(Accuracy18["Matrix_RF"])
-    print(Accuracy18["Report_RF"])
-
-Calculating Accuracy Different for both datasets
-
-    a = (Accuracy17["Accuracy_SVC"] - Accuracy18["Accuracy_SVC"])*100
-    b = (Accuracy17["Accuracy_RF"] - Accuracy18["Accuracy_RF"])*100
-    print("Different")
-    print("SVM: ", str(a))
-    print("RF: ", str(b))
+    print("Accuracy:", Accuracy2["Accuracy_RF"])
+    print(Accuracy2["Matrix_RF"])
+    print(Accuracy2["Report_RF"])
 
 **10.3. Predicting dataset imageries**
 
@@ -378,15 +375,12 @@ Calculating Accuracy Different for both datasets
     Prediction1_RF = RandomForest_model1.predict(img_slc1.flatten().reshape(-1,1))
     Prediction2_RF = RandomForest_model2.predict(img_slc2.flatten().reshape(-1,1))
 
-Different Map
-
-    Kernel_SVC_diff = Prediction1_SVC - Prediction2_SVC 
-    RandomForest_diff = Prediction1_RF  - Prediction2_RF
 
 **10.4. Saving image prediction**
 
+    kwargs['datamap'], kwargs['output'] = 'prd', PRD # set category and outputmap
     kwargs['method'] = 'SVC'
-    kwargs['filename'], kwargs['accuracy'] = file_names, round(Accuracy17["Accuracy_SVC"],2)
+    kwargs['filename'], kwargs['accuracy'] = file_names, round(Accuracy1["Accuracy_SVC"],2)
     sets = Prediction1_SVC.reshape(img_slc1.shape) # since prediction's shape is 1D, we need to reshape our array to 2D
     set0 = sets < 0
     sets[set0] = 0
@@ -394,7 +388,7 @@ Different Map
     sets = 0 # clear memory
 
     kwargs['method'] = 'RF'
-    kwargs['accuracy'] = round(Accuracy17["Accuracy_RF"],2)
+    kwargs['accuracy'] = round(Accuracy1["Accuracy_RF"],2)
     sets = Prediction1_RF.reshape(img_slc1.shape) # since prediction's shape is 1D, we need to reshape our array to 2D
     set0 = sets < 0
     sets[set0] = 0
@@ -402,7 +396,7 @@ Different Map
     sets = 0 # clear memory
 
     kwargs['method'] = 'SVC'
-    kwargs['filename'], kwargs['accuracy'] = file_names2, round(Accuracy18["Accuracy_SVC"],2)
+    kwargs['filename'], kwargs['accuracy'] = file_names2, round(Accuracy2["Accuracy_SVC"],2)
     sets = Prediction2_SVC.reshape(img_slc2.shape) # since prediction's shape is 1D, we need to reshape our array to 2D
     set0 = sets < 0
     sets[set0] = 0
@@ -410,17 +404,47 @@ Different Map
     sets = 0 # clear memory
 
     kwargs['method'] = 'RF'
-    kwargs['accuracy'] = round(Accuracy18["Accuracy_RF"],2)
+    kwargs['accuracy'] = round(Accuracy2["Accuracy_RF"],2)
     sets = Prediction2_RF.reshape(img_slc2.shape) # since prediction's shape is 1D, we need to reshape our array to 2D
     set0 = sets < 0
     sets[set0] = 0
     istore(sets,**kwargs) # Saving RandomForest prediction
     sets = 0 # clear memory
+    
+**10.4. Machine Learning Assessment and Time-series Comparison**
 
-    kwargs['filename'],kwargs['headingname'], kwargs['accuracy'] = 'Dif_SVC', 'Different Map 17/18 to 18/19', (a/100)
-    istore(Kernel_SVC_diff.reshape(img_slc1.shape),**kwargs) # Saving Different SVC Prediction
+Calculating Accuracy Different from Machine Learning
 
-    kwargs['filename'],kwargs['headingname'], kwargs['accuracy'] = 'Dif_RF', 'Different Map 17/18 to 18/19', (b/100)
-    istore(RandomForest_diff.reshape(img_slc1.shape),**kwargs) # Saving Different RF Prediction
+    d1 = abs(Accuracy1["Accuracy_RF"] - Accuracy1["Accuracy_SVC"])
+    d2 = abs(Accuracy2["Accuracy_RF"] - Accuracy2["Accuracy_SVC"])
 
-    del Kernel_SVC_diff, RandomForest_diff # clear memory
+Different Map
+
+    d1_map = Prediction1_RF - Prediction1_SVC
+    d2_map = Prediction2_RF - Prediction2_SVC
+    dSVC_map = Prediction1_SVC - Prediction2_SVC 
+    dRF_map = Prediction1_RF  - Prediction2_RF
+    
+Saving Different Map
+
+    kwargs['datamap'], kwargs['output'] = 'dif', DIF # set category and outputmap
+    kwargs['datainput'] = 'method'
+    
+    kwargs['filename'],kwargs['headingname'], kwargs['accuracy'] = file_names, heading_names, d1
+    istore(d1_map.reshape(img_slc1.shape), **kwargs) # Saving ML Assesment 1
+    
+    kwargs['filename'],kwargs['headingname'], kwargs['accuracy'] = file_names2, heading_names2, d2
+    istore(d2_map.reshape(img_slc1.shape), **kwargs) # Saving ML Assesment 2
+    
+    kwargs['datainput'] = 'time'
+    kwargs['method'] = 'SVC'
+    kwargs['filename'],kwargs['headingname'] = 'time_series', '2017/2018 to 2018/2019'
+    istore(dSVC_map.reshape(img_slc1.shape),**kwargs) # Saving Different SVC Prediction
+
+    kwargs['method'] = 'RF'
+    kwargs['filename'],kwargs['headingname'] = 'time_series', '2017/2018 to 2018/2019'
+    istore(dRF_map.reshape(img_slc1.shape),**kwargs) # Saving Different RF Prediction
+
+    del d1_map, d2_map, dSVC_map, dRF_map # clear memory
+    
+### Class Interpretation
