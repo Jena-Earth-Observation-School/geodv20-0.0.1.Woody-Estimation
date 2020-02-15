@@ -155,6 +155,8 @@ _Using module <font color="blue">cref()</font>, classes in reference (LiDAR data
 
     selection = 24 # selected time-series layer
     rd_state = 204 # set random_state for machine learning, and split-train-test module
+    tsize = 0.7 # set test size for machine learning split-train-test
+    estimator = 50 # number of estimator for RandomForest
 
     file_name = "Woody" # reference filename
     heading_name = "LiDAR Woody Cover" # heading on figure
@@ -174,7 +176,8 @@ _Using module <font color="blue">cref()</font>, classes in reference (LiDAR data
               'headingname': '',
               'selection': selection, #by default
               'output': '',
-              'method':''} # Default kwargs for saving figure later
+              'method':'',
+              'nestimator': estimator} # Default kwargs for saving figure later
 
 _Using module <font color="blue">istore()</font>, the dataset's Figure can be generated, by certain set (kwargs), then stored into exact desired folder_
           
@@ -272,10 +275,10 @@ _Using module <font color="blue">subsets()</font>, the reference (LiDAR data) wi
 
 **7. Do split train and test**
 
-    ref_train, ref_test = train_test_split(img_ref, test_size=0.7,random_state=rd_state, shuffle=False)
+    ref_train, ref_test = train_test_split(img_ref, test_size=tsize,random_state=rd_state, shuffle=False)
 
     set1_train, set1_test, set2_train, set2_test = train_test_split(img_set17, img_set18,
-                                                                    test_size=0.7,
+                                                                    test_size=tsize,
                                                                     random_state=rd_state, shuffle=False)
 
     mask = ~np.isnan(set1_train) & ~np.isnan(set2_train) & ~np.isnan(ref_train) # creating ~NAN Mask
@@ -294,10 +297,10 @@ _Using module <font color="blue">subsets()</font>, the reference (LiDAR data) wi
 
 **8. Set Machine Learning module**
 
-    Kernel_SVC_model1 = svm.SVC(random_state = rd_state)
-    Kernel_SVC_model2 = svm.SVC(random_state = rd_state)
-    RandomForest_model1 = RandomForestClassifier(n_estimators=24, random_state = rd_state)
-    RandomForest_model2 = RandomForestClassifier(n_estimators=24, random_state = rd_state)
+    Kernel_SVC_model1 = svm.SVC(decision_function_shape='ovo', random_state = rd_state)
+    Kernel_SVC_model2 = svm.SVC(decision_function_shape='ovo', random_state = rd_state)
+    RandomForest_model1 = RandomForestClassifier(n_estimators=estimator, random_state = rd_state)
+    RandomForest_model2 = RandomForestClassifier(n_estimators=estimator, random_state = rd_state)
 
 ### Fitting of the Classifiers
 
