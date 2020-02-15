@@ -30,17 +30,6 @@ It's is important to know which modules are necessary for our system and to call
     %matplotlib qt
     import os
     import numpy as np
-    from scipy import io
-    import pandas as pd
-    import seaborn as sns
-    import pyproj
-
-
-**Raster Calling Modules (gdal)** https://pypi.org/project/GDAL/
-
-    from osgeo import gdal, ogr, osr, gdal_array, gdalconst, sys
-    gdal.UseExceptions() # Tell GDAL to throw Python exceptions, and register all drivers (https://ceholden.github.io/open-geo-tutorial/python/chapter_5_classification.html)
-    gdal.AllRegister()
 
 **Import personal modules**
 
