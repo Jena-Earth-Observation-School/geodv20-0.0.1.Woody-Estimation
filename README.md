@@ -23,7 +23,7 @@ References used in this system are tagged in the code to give credits to the own
 It's is important to know which modules are necessary for our system and to call all of the essential modules on the beginning of our system to minimise minor error at the middle of the framework.
 
 
-**1. Calling all required moduls for our processes. We divide our modules into: General, Raster Calling, and Machine Learning**
+**1. Calling all required modules for processes. The modules are divided into: General, Main, and Machine Learning**
 
 **General Modules**
 
@@ -31,7 +31,7 @@ It's is important to know which modules are necessary for our system and to call
     import os
     import numpy as np
 
-**Import personal modules**
+**Import main modules**
 
     from mlp import callset,cref,istore,subsets
 
@@ -146,6 +146,8 @@ _Using module <font color="blue">cref()</font>, classes in reference (LiDAR data
     rd_state = 204 # set random_state for machine learning, and split-train-test module
     tsize = 0.7 # set test size for machine learning split-train-test
     estimator = 100 # number of estimator for RandomForest in range 10 to 500
+    kernel = "rbf" # set estimation method for SVM, linear/poly/rbf/sigmoid/precomputed
+    dfs = "ovo" # set classification method for SVM, ovo or ovr
 
     file_name = "Woody" # reference filename
     heading_name = "LiDAR Woody Cover" # heading on figure
@@ -166,9 +168,11 @@ _Using module <font color="blue">cref()</font>, classes in reference (LiDAR data
               'selection': selection, #by default
               'output': '',
               'method':'',
-              'nestimator': estimator} # Default kwargs for saving figure later
+              'nestimator': estimator,
+              'kernel': kernel,
+              'dfs': dfs,
+              'accuracy': ''} # Default kwargs for saving figure later
 
-_Using module <font color="blue">istore()</font>, the dataset's Figure can be generated, by certain set (kwargs), then stored into exact desired folder_
           
 **5. Set output folders, for figure storage**
 
@@ -198,6 +202,8 @@ _Using module <font color="blue">istore()</font>, the dataset's Figure can be ge
         os.makedirs(DIF,exist_ok=True)
 
 ### Saving Overview Map, creating Dataset-subset and saving Subset Map
+
+_Using module <font color="blue">istore()</font>, the dataset's Figure can be generated, by certain set (kwargs), then stored into exact desired folder_
 
 **6.1. Save overview map**
 
@@ -291,8 +297,11 @@ _Using module <font color="blue">subsets()</font>, the reference (LiDAR data) wi
 
 **8. Set Machine Learning module**
 
-    Kernel_SVC_model1 = svm.SVC(decision_function_shape='ovo', random_state = rd_state)
-    Kernel_SVC_model2 = svm.SVC(decision_function_shape='ovo', random_state = rd_state)
+    # Control
+    kwargs["nestimator"], kwargs["kernel"], kwargs["dfs"] = estimator, kernel, dfs
+    
+    Kernel_SVC_model1 = svm.SVC(kernel= kernel, decision_function_shape= dfs,random_state = rd_state)
+    Kernel_SVC_model2 = svm.SVC(kernel= kernel, decision_function_shape= dfs,random_state = rd_state)
     RandomForest_model1 = RandomForestClassifier(n_estimators=estimator, random_state = rd_state)
     RandomForest_model2 = RandomForestClassifier(n_estimators=estimator, random_state = rd_state)
 
